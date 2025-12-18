@@ -1,6 +1,5 @@
 # GitHub Repository Analyzer
 
-**Automated GitHub Repository Analysis using OpenAI GPT API**
 
 ---
 
