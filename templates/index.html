@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitGrade — AI Repo Analyzer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        body {
+            background: radial-gradient(circle at top, #1e293b, #020617);
+        }
+        .glass {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(148, 163, 184, 0.15);
+        }
+    </style>
+</head>
+
+<body class="text-white min-h-screen flex items-center justify-center p-6">
+
+    <div class="w-full max-w-3xl space-y-10">
+
+        <!-- Header -->
+        <div class="text-center space-y-3">
+            <h1 class="text-5xl font-extrabold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+                GitGrade
+            </h1>
+            <p class="text-gray-400 text-lg">
+                AI-Powered GitHub Repository Health Analyzer
+            </p>
+        </div>
+
+        <!-- Input Card -->
+        <div class="glass rounded-2xl p-6 shadow-xl space-y-5">
+            <label class="text-sm text-gray-300">GitHub Repository URL</label>
+
+            <div class="flex flex-col sm:flex-row gap-4">
+                <input
+                    id="repoUrl"
+                    type="text"
+                    placeholder="https://github.com/username/repo"
+                    class="flex-1 px-5 py-4 rounded-xl bg-gray-900/70 border border-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                />
+
+                <button
+                    onclick="analyzeRepo()"
+                    class="px-8 py-4 rounded-xl font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:opacity-90 transition shadow-lg">
+                    Analyze 🚀
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading -->
+        <div id="loading" class="hidden text-center glass rounded-2xl p-8">
+            <div class="mx-auto h-14 w-14 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            <p class="mt-4 text-gray-300 tracking-wide">
+                Analyzing repository health...
+            </p>
+        </div>
+
+        <!-- Results -->
+        <div id="results" class="hidden space-y-6">
+
+            <!-- Score -->
+            <div class="glass rounded-2xl p-6 flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-bold">Health Score</h2>
+                    <p class="text-gray-400 text-sm">Activity • Code Quality • Structure</p>
+                </div>
+                <div id="scoreValue"
+                     class="text-6xl font-extrabold bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">
+                    0/100
+                </div>
+            </div>
+
+            <!-- Summary -->
+            <div class="glass rounded-2xl p-6">
+                <h3 class="text-lg font-semibold text-blue-400 mb-3">📊 Summary</h3>
+                <p id="summaryText" class="text-gray-300 leading-relaxed"></p>
+            </div>
+
+            <!-- Roadmap -->
+            <div class="glass rounded-2xl p-6">
+                <h3 class="text-lg font-semibold text-purple-400 mb-4">
+                    🚀 Personalized Improvement Roadmap
+                </h3>
+                <ul id="roadmapList" class="space-y-3"></ul>
+            </div>
+
+        </div>
+
+        <!-- Footer -->
+        <p class="text-center text-gray-500 text-sm">
+            Built with ❤️ using AI & GitHub APIs
+        </p>
+
+    </div>
+
+    <script>
+        async function analyzeRepo() {
+            const url = document.getElementById('repoUrl').value;
+            const loading = document.getElementById('loading');
+            const results = document.getElementById('results');
+
+            if (!url) return alert("Please enter a repository URL");
+
+            loading.classList.remove('hidden');
+            results.classList.add('hidden');
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+
+                const data = await response.json();
+                if (data.error) throw new Error(data.error);
+
+                document.getElementById('scoreValue').innerText = data.score;
+                document.getElementById('summaryText').innerText = data.summary;
+
+                const roadmapList = document.getElementById('roadmapList');
+                roadmapList.innerHTML = '';
+
+                data.roadmap.forEach(step => {
+                    roadmapList.innerHTML += `
+                        <li class="flex items-start gap-3">
+                            <span class="text-green-400 text-lg">✔</span>
+                            <span class="text-gray-200">${step}</span>
+                        </li>`;
+                });
+
+                loading.classList.add('hidden');
+                results.classList.remove('hidden');
+
+            } catch (error) {
+                alert("Error: " + error.message);
+                loading.classList.add('hidden');
+            }
+        }
+    </script>
+
+</body>
+</html>
